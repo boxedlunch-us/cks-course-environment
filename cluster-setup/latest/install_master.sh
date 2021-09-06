@@ -24,7 +24,7 @@ apt-get install -y etcd-client vim build-essential
 systemctl daemon-reload
 curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
 cat <<EOF > /etc/apt/sources.list.d/kubernetes.list
-deb http://apt.kubernetes.io/ kubernetes-xenial main
+deb http://apt.kubernetes.io/ kubernetes-focal main
 EOF
 KUBE_VERSION=1.21.0
 apt-get update
