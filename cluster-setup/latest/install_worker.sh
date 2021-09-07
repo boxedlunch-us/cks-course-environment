@@ -31,13 +31,13 @@ KUBE_VERSION=1.22.1
 apt-get update
 apt-get install -y docker.io kubelet=${KUBE_VERSION}-00 kubeadm=${KUBE_VERSION}-00 kubectl=${KUBE_VERSION}-00 kubernetes-cni=0.8.7-00
 
-# cat > /etc/docker/daemon.json <<EOF
-# {
-#   "exec-opts": ["native.cgroupdriver=systemd"],
-#   "log-driver": "json-file",
-#   "storage-driver": "overlay2"
-# }
-# EOF
+cat > /etc/docker/daemon.json <<EOF
+{
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "log-driver": "json-file",
+  "storage-driver": "overlay2"
+}
+EOF
 mkdir -p /etc/systemd/system/docker.service.d
 
 # Restart docker.
