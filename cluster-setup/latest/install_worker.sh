@@ -1,7 +1,8 @@
 #!/bin/sh
 
 # Source: http://kubernetes.io/docs/getting-started-guides/kubeadm/
-
+swapoff -a
+sed -e '/swap/s/^/#/g' /etc/fstab
 ### setup terminal
 apt-get update
 apt-get install -y bash-completion binutils
@@ -26,17 +27,17 @@ curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
 cat <<EOF > /etc/apt/sources.list.d/kubernetes.list
 deb http://apt.kubernetes.io/ kubernetes-xenial main
 EOF
-KUBE_VERSION=1.21.0
+KUBE_VERSION=1.22.1
 apt-get update
 apt-get install -y docker.io kubelet=${KUBE_VERSION}-00 kubeadm=${KUBE_VERSION}-00 kubectl=${KUBE_VERSION}-00 kubernetes-cni=0.8.7-00
 
-cat > /etc/docker/daemon.json <<EOF
-{
-  "exec-opts": ["native.cgroupdriver=systemd"],
-  "log-driver": "json-file",
-  "storage-driver": "overlay2"
-}
-EOF
+# cat > /etc/docker/daemon.json <<EOF
+# {
+#   "exec-opts": ["native.cgroupdriver=systemd"],
+#   "log-driver": "json-file",
+#   "storage-driver": "overlay2"
+# }
+# EOF
 mkdir -p /etc/systemd/system/docker.service.d
 
 # Restart docker.
