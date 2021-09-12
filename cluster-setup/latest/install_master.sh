@@ -2,7 +2,7 @@
 
 # Source: http://kubernetes.io/docs/getting-started-guides/kubeadm/
 swapoff -a
-sed -e '/swap/s/^/#/g' /etc/fstab
+sed -i '/swap/s/^/#/g' /etc/fstab
 ### setup terminal
 apt-get update
 apt-get install -y bash-completion binutils
