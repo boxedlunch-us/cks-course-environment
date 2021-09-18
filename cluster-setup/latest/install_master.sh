@@ -54,11 +54,17 @@ systemctl enable kubelet && systemctl start kubelet
 
 ## k8s external cloud config
 cat <<EOF > kubeadm.yaml
-apiVersion: kubeadm.k8s.io/v1beta1
+apiVersion: kubeadm.k8s.io/v1beta2
 kind: InitConfiguration
 nodeRegistration:
   kubeletExtraArgs:
-    cloud-provider: "external"
+    cloud-provider: external
+---
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: ClusterConfiguration
+networking:
+  serviceSubnet: "10.96.0.0/12"
+  podSubnet: "172.16.0.0/16"
 EOF
 
 
