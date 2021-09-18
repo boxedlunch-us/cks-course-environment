@@ -52,11 +52,20 @@ docker info | grep -i "cgroup"
 
 systemctl enable kubelet && systemctl start kubelet
 
+## k8s external cloud config
+cat <<EOF > kubeadm.yaml
+apiVersion: kubeadm.k8s.io/v1beta1
+kind: InitConfiguration
+nodeRegistration:
+  kubeletExtraArgs:
+    cloud-provider: "external"
+EOF
+
 
 ### init k8s
 rm /root/.kube/config
 kubeadm reset -f
-kubeadm init --kubernetes-version=${KUBE_VERSION} --ignore-preflight-errors=NumCPU --skip-token-print
+kubeadm init --kubernetes-version=${KUBE_VERSION} --config=kubeadm.yaml --ignore-preflight-errors=NumCPU --skip-token-print
 
 mkdir -p ~/.kube
 sudo cp -i /etc/kubernetes/admin.conf ~/.kube/config
