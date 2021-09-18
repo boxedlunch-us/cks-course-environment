@@ -50,28 +50,18 @@ systemctl enable docker
 docker info | grep -i "storage"
 docker info | grep -i "cgroup"
 
-systemctl enable kubelet && systemctl start kubelet
-
-## k8s external cloud config
-cat <<EOF > kubeadm.yaml
-apiVersion: kubeadm.k8s.io/v1beta2
-kind: InitConfiguration
-nodeRegistration:
-  kubeletExtraArgs:
-    cloud-provider: external
----
-apiVersion: kubeadm.k8s.io/v1beta2
-kind: ClusterConfiguration
-networking:
-  serviceSubnet: "10.96.0.0/12"
-  podSubnet: "172.16.0.0/16"
+# add vsphere cloud provider
+cat <<EOF > /etc/default/kubelet
+KUBELET_EXTRA_ARGS="--cloud-provider=external"
 EOF
 
+systemctl daemon-reload
+systemctl enable kubelet && systemctl start kubelet
 
 ### init k8s
 rm /root/.kube/config
 kubeadm reset -f
-kubeadm init --kubernetes-version=${KUBE_VERSION} --config=kubeadm.yaml --ignore-preflight-errors=NumCPU --skip-token-print
+kubeadm init --kubernetes-version=${KUBE_VERSION} --ignore-preflight-errors=NumCPU --skip-token-print
 
 mkdir -p ~/.kube
 sudo cp -i /etc/kubernetes/admin.conf ~/.kube/config
