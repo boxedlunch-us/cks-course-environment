@@ -40,6 +40,23 @@ sudo cat > /etc/docker/daemon.json <<EOF
 EOF
 sudo mkdir -p /etc/systemd/system/docker.service.d
 
+# kubeadm cluster config
+sudo cat > kubeadm-config.yaml <<EOF
+apiServer:
+apiVersion: kubeadm.k8s.io/v1beta3
+certificatesDir: /etc/kubernetes/pki
+clusterName: strelizia
+etcd:
+  local:
+    dataDir: /var/lib/etcd
+imageRepository: k8s.gcr.io
+kind: ClusterConfiguration
+kubernetesVersion: 1.22.0
+networking:
+  dnsDomain: cluster.local
+  serviceSubnet: 10.96.0.0/12
+EOF
+
 # Restart docker.
 sudo systemctl daemon-reload
 sudo systemctl restart docker
@@ -61,7 +78,7 @@ sudo systemctl enable kubelet && systemctl start kubelet
 ### init k8s
 sudo rm /root/.kube/config
 sudo kubeadm reset -f
-sudo kubeadm init --kubernetes-version=${KUBE_VERSION} --ignore-preflight-errors=NumCPU --skip-token-print
+sudo kubeadm init --config kubeadm-config.yaml --ignore-preflight-errors=NumCPU --skip-token-print
 
 mkdir -p ~/.kube
 sudo cp -i /etc/kubernetes/admin.conf ~/.kube/config
