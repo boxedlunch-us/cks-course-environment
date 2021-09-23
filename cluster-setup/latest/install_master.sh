@@ -40,12 +40,15 @@ sudo cat > /etc/docker/daemon.json <<EOF
 EOF
 sudo mkdir -p /etc/systemd/system/docker.service.d
 
+# get hostname
+cluster_name=$(hostname | cut -d- -f1)
+
 # kubeadm cluster config
 sudo cat > kubeadm-config.yaml <<EOF
 apiServer:
 apiVersion: kubeadm.k8s.io/v1beta3
 certificatesDir: /etc/kubernetes/pki
-clusterName: strelizia
+clusterName: $cluster_name
 etcd:
   local:
     dataDir: /var/lib/etcd
