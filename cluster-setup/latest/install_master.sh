@@ -1,11 +1,11 @@
 #!/bin/sh
 
 # Source: http://kubernetes.io/docs/getting-started-guides/kubeadm/
-swapoff -a
-sed -i '/swap/s/^/#/g' /etc/fstab
+sudo swapoff -a
+sudo sed -i '/swap/s/^/#/g' /etc/fstab
 ### setup terminal
-apt-get update
-apt-get install -y bash-completion binutils
+sudo apt-get update
+sudo apt-get install -y bash-completion binutils
 echo 'colorscheme ron' >> ~/.vimrc
 echo 'set tabstop=2' >> ~/.vimrc
 echo 'set shiftwidth=2' >> ~/.vimrc
@@ -18,50 +18,67 @@ sed -i '1s/^/force_color_prompt=yes\n/' ~/.bashrc
 
 
 ### install k8s and docker
-apt-get remove -y docker.io kubelet kubeadm kubectl kubernetes-cni
-apt-get autoremove -y
-apt-get install -y etcd-client vim build-essential
+sudo apt-get remove -y docker.io kubelet kubeadm kubectl kubernetes-cni
+sudo apt-get autoremove -y
+sudo apt-get install -y etcd-client vim build-essential
 
-systemctl daemon-reload
+sudo systemctl daemon-reload
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add
 cat <<EOF > /etc/apt/sources.list.d/kubernetes.list
 deb http://apt.kubernetes.io/ kubernetes-xenial main
 EOF
 KUBE_VERSION=1.22.1
-apt-get update
-apt-get install -y docker.io kubelet=${KUBE_VERSION}-00 kubeadm=${KUBE_VERSION}-00 kubectl=${KUBE_VERSION}-00 kubernetes-cni=0.8.7-00
+sudo apt-get update
+sudo apt-get install -y docker.io kubelet=${KUBE_VERSION}-00 kubeadm=${KUBE_VERSION}-00 kubectl=${KUBE_VERSION}-00 kubernetes-cni=0.8.7-00
 
-cat > /etc/docker/daemon.json <<EOF
+sudo cat > /etc/docker/daemon.json <<EOF
 {
   "exec-opts": ["native.cgroupdriver=systemd"],
   "log-driver": "json-file",
   "storage-driver": "overlay2"
 }
 EOF
-mkdir -p /etc/systemd/system/docker.service.d
+sudo mkdir -p /etc/systemd/system/docker.service.d
+
+# kubeadm cluster config
+sudo cat > kubeadm-config.yaml <<EOF
+apiServer:
+apiVersion: kubeadm.k8s.io/v1beta3
+certificatesDir: /etc/kubernetes/pki
+clusterName: strelizia
+etcd:
+  local:
+    dataDir: /var/lib/etcd
+imageRepository: k8s.gcr.io
+kind: ClusterConfiguration
+kubernetesVersion: 1.22.0
+networking:
+  dnsDomain: cluster.local
+  serviceSubnet: 10.96.0.0/12
+EOF
 
 # Restart docker.
-systemctl daemon-reload
-systemctl restart docker
+sudo systemctl daemon-reload
+sudo systemctl restart docker
 
 # start docker on reboot
-systemctl enable docker
+sudo systemctl enable docker
 
-docker info | grep -i "storage"
-docker info | grep -i "cgroup"
+sudo docker info | grep -i "storage"
+sudo docker info | grep -i "cgroup"
 
 # add vsphere cloud provider
-cat <<EOF > /etc/default/kubelet
+sudo cat <<EOF > /etc/default/kubelet
 KUBELET_EXTRA_ARGS="--cloud-provider=external"
 EOF
 
-systemctl daemon-reload
-systemctl enable kubelet && systemctl start kubelet
+sudo systemctl daemon-reload
+sudo systemctl enable kubelet && systemctl start kubelet
 
 ### init k8s
-rm /root/.kube/config
-kubeadm reset -f
-kubeadm init --kubernetes-version=${KUBE_VERSION} --ignore-preflight-errors=NumCPU --skip-token-print
+sudo rm /root/.kube/config
+sudo kubeadm reset -f
+sudo kubeadm init --config kubeadm-config.yaml --ignore-preflight-errors=NumCPU --skip-token-print
 
 mkdir -p ~/.kube
 sudo cp -i /etc/kubernetes/admin.conf ~/.kube/config
@@ -70,4 +87,4 @@ kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl versio
 
 echo
 echo "### COMMAND TO ADD A WORKER NODE ###"
-kubeadm token create --print-join-command --ttl 0
+sudo kubeadm token create --print-join-command --ttl 0
