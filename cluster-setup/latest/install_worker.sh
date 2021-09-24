@@ -5,7 +5,7 @@ swapoff -a
 sed -i '/swap/s/^/#/g' /etc/fstab
 ### setup terminal
 apt-get update
-apt-get install -y bash-completion binutils
+apt-get install -y bash-completion binutils nfs-common
 echo 'colorscheme ron' >> ~/.vimrc
 echo 'set tabstop=2' >> ~/.vimrc
 echo 'set shiftwidth=2' >> ~/.vimrc
